@@ -15,14 +15,12 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app)
 
-
 # Configuration
 class Config:
-    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://dd6e-193-255-198-135.ngrok-free.app/api')
+    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://dd6e-193-255-198-135.ngrok-free.app')
     REQUEST_TIMEOUT = 30
 
-
-# Your existing HTML template
+# HTML Template
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -107,14 +105,15 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        const backendUrl = '${window.location.origin}';
+        // Get backend URL from server configuration
+        const backendUrl = '{{ backend_url }}';
         const backendStatus = document.getElementById('backendStatus');
         const statusDiv = document.getElementById('status');
 
         // Check backend connection
         async function checkBackend() {
             try {
-                const response = await fetch(`${backendUrl}/api/test`);
+                const response = await fetch(`${backendUrl}/test`);
                 const data = await response.json();
 
                 backendStatus.innerHTML = `
@@ -242,12 +241,13 @@ HTML_TEMPLATE = """
 </html>
 """
 
-
 @app.route('/')
 def index():
-    """Render the main page"""
-    return render_template_string(HTML_TEMPLATE)
-
+    """Render the main page with the backend URL from config"""
+    return render_template_string(
+        HTML_TEMPLATE, 
+        backend_url=Config.LOCAL_BACKEND_URL
+    )
 
 @app.route('/api/test', methods=['GET'])
 def test():
@@ -265,13 +265,12 @@ def test():
             "comfyui_accessible": False
         })
 
-
 @app.route('/api/upload', methods=['POST'])
 def upload():
     """Forward upload request to local backend"""
     try:
         response = requests.post(
-            f"{Config.LOCAL_BACKEND_URL}/api/upload",
+            f"{Config.LOCAL_BACKEND_URL}/upload",
             files={
                 'person_image': request.files['person_image'],
                 'garment_image': request.files['garment_image']
@@ -282,13 +281,12 @@ def upload():
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/generate', methods=['POST'])
 def generate():
     """Forward generation request to local backend"""
     try:
         response = requests.post(
-            f"{Config.LOCAL_BACKEND_URL}/api/generate",
+            f"{Config.LOCAL_BACKEND_URL}/generate",
             json=request.json,
             timeout=Config.REQUEST_TIMEOUT
         )
@@ -296,13 +294,12 @@ def generate():
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/result/<filename>', methods=['GET'])
 def get_result(filename):
     """Forward result request to local backend"""
     try:
         response = requests.get(
-            f"{Config.LOCAL_BACKEND_URL}/api/result/{filename}",
+            f"{Config.LOCAL_BACKEND_URL}/result/{filename}",
             timeout=Config.REQUEST_TIMEOUT
         )
         return response.content, response.status_code, {
@@ -310,7 +307,6 @@ def get_result(filename):
         }
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 500
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
