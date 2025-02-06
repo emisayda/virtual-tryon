@@ -18,7 +18,7 @@ CORS(app)
 
 # Configuration
 class Config:
-    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://450a-193-255-198-135.ngrok-free.app')
+    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://80cb-193-255-198-135.ngrok-free.app')
     REQUEST_TIMEOUT = 30
 
 
