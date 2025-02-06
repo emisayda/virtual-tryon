@@ -5,10 +5,7 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
-
-# Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
@@ -16,13 +13,11 @@ app = Flask(__name__)
 CORS(app)
 
 
-# Configuration
 class Config:
-    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://80cb-193-255-198-135.ngrok-free.app')
+    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://4373-193-255-198-135.ngrok-free.app')
     REQUEST_TIMEOUT = 30
 
 
-# HTML Template
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
@@ -42,7 +37,6 @@ HTML_TEMPLATE = """
 
         <form id="tryonForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Person Image Upload -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Person Image</label>
                     <input type="file" name="person_image" accept="image/*" required
@@ -50,7 +44,6 @@ HTML_TEMPLATE = """
                     <img id="personPreview" class="hidden max-h-64 mx-auto">
                 </div>
 
-                <!-- Garment Image Upload -->
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Garment Image</label>
                     <input type="file" name="garment_image" accept="image/*" required
@@ -59,7 +52,6 @@ HTML_TEMPLATE = """
                 </div>
             </div>
 
-            <!-- Parameters -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">Steps (20-100)</label>
@@ -80,7 +72,6 @@ HTML_TEMPLATE = """
             </button>
         </form>
 
-        <!-- Result Display -->
         <div id="result" class="mt-8 hidden">
             <h2 class="text-xl font-semibold mb-4">Result</h2>
             <img id="resultImage" class="max-w-full mx-auto rounded-lg shadow-lg">
@@ -92,7 +83,6 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
-        <!-- Loading Indicator -->
         <div id="loading" class="hidden mt-8 text-center">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p class="mt-4 text-gray-600">Processing your request... This may take a few minutes.</p>
@@ -118,7 +108,6 @@ HTML_TEMPLATE = """
             statusDiv.classList.add('hidden');
         }
 
-        // Preview uploaded images
         function previewImage(input, previewId) {
             const preview = document.getElementById(previewId);
             const file = input.files[0];
@@ -140,84 +129,84 @@ HTML_TEMPLATE = """
             }
         }
 
-        // Handle form submission
         document.getElementById('tryonForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            hideStatus();
+    e.preventDefault();
+    hideStatus();
 
-            const formData = new FormData(e.target);
-            const loading = document.getElementById('loading');
-            const result = document.getElementById('result');
-            const resultImage = document.getElementById('resultImage');
-            const downloadLink = document.getElementById('downloadLink');
+    const formData = new FormData(e.target);
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    const resultImage = document.getElementById('resultImage');
+    const downloadLink = document.getElementById('downloadLink');
 
-            try {
-                loading.classList.remove('hidden');
-                result.classList.add('hidden');
+    try {
+        loading.classList.remove('hidden');
+        result.classList.add('hidden');
 
-                // Upload files
-                console.log('Uploading files...');
-                const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!uploadResponse.ok) {
-                    const errorData = await uploadResponse.text();
-                    throw new Error(`Upload failed: ${errorData}`);
-                }
-
-                const uploadData = await uploadResponse.json();
-                console.log('Upload successful:', uploadData);
-
-                // Generate try-on
-                console.log('Generating try-on...');
-                const generateResponse = await fetch(`${backendUrl}/api/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        person_image: uploadData.person_image,
-                        garment_image: uploadData.garment_image,
-                        steps: formData.get('steps'),
-                        cfg: formData.get('cfg')
-                    })
-                });
-
-                if (!generateResponse.ok) {
-                    const errorData = await generateResponse.text();
-                    throw new Error(`Generation failed: ${errorData}`);
-                }
-
-                const generateData = await generateResponse.json();
-                console.log('Generate successful:', generateData);
-
-                // Get result image
-                console.log('Fetching result...');
-                const imageResponse = await fetch(`${backendUrl}/api/result/${generateData.image}`);
-
-                if (!imageResponse.ok) {
-                    throw new Error('Failed to get result image');
-                }
-
-                const blob = await imageResponse.blob();
-                const imageUrl = URL.createObjectURL(blob);
-                resultImage.src = imageUrl;
-                downloadLink.href = imageUrl;
-                downloadLink.download = generateData.image;
-                result.classList.remove('hidden');
-                showStatus('Generation completed successfully!', 'success');
-
-            } catch (error) {
-                console.error('Error:', error);
-                showStatus(error.message, 'error');
-            } finally {
-                loading.classList.add('hidden');
-            }
+        console.log('Uploading files...');
+        const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
+            method: 'POST',
+            body: formData
         });
 
-        // Setup image preview handlers
+        if (!uploadResponse.ok) {
+            const errorData = await uploadResponse.text();
+            throw new Error(`Upload failed: ${errorData}`);
+        }
+
+        const uploadData = await uploadResponse.json();
+        console.log('Upload successful:', uploadData);
+
+        console.log('Generating try-on...');
+        const generateResponse = await fetch(`${backendUrl}/api/generate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                person_image: uploadData.person_image,
+                garment_image: uploadData.garment_image,
+                steps: formData.get('steps'),
+                cfg: formData.get('cfg')
+            })
+        });
+
+        if (!generateResponse.ok) {
+            const errorData = await generateResponse.text();
+            throw new Error(`Generation failed: ${errorData}`);
+        }
+
+        const generateData = await generateResponse.json();
+        console.log('Generate successful:', generateData);
+
+        console.log('Fetching result...');
+        const imageUrl = `${backendUrl}/api/result/${generateData.image}`;
+        console.log('Result URL:', imageUrl);
+
+        // Assign the URL to the image
+        resultImage.src = imageUrl;
+        resultImage.onload = () => {
+            console.log('✅ Image loaded successfully.');
+        };
+        resultImage.onerror = () => {
+            console.error('❌ Failed to load the image.');
+        };
+
+        // Assign the URL to the download link
+        downloadLink.href = imageUrl;
+        downloadLink.download = generateData.image;
+
+        result.classList.remove('hidden');
+        showStatus('Generation completed successfully!', 'success');
+    } catch (error) {
+        console.error('Error:', error);
+        showStatus(error.message, 'error');
+    } finally {
+        loading.classList.add('hidden');
+    }
+});
+
+
         document.querySelector('input[name="person_image"]')
             .addEventListener('change', e => previewImage(e.target, 'personPreview'));
         document.querySelector('input[name="garment_image"]')
@@ -230,7 +219,6 @@ HTML_TEMPLATE = """
 
 @app.route('/')
 def index():
-    """Render the main page"""
     return render_template_string(
         HTML_TEMPLATE,
         backend_url=Config.LOCAL_BACKEND_URL
@@ -239,7 +227,6 @@ def index():
 
 @app.route('/api/test', methods=['GET'])
 def test():
-    """Test endpoint to check backend status"""
     try:
         response = requests.get(
             f"{Config.LOCAL_BACKEND_URL}/test",
@@ -257,4 +244,4 @@ def test():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)
