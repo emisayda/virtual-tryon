@@ -144,10 +144,14 @@ HTML_TEMPLATE = """
         result.classList.add('hidden');
 
         console.log('Uploading files...');
-        const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
-            method: 'POST',
-            body: formData
-        });
+        try {
+        const response = await fetch(`${backendUrl}/api/upload`, {
+        method: "POST",
+        headers: {
+          "ngrok-skip-browser-warning": "69420", // Bypasses ngrok's warning page
+        },
+      body: formData, // Sending the images as FormData
+    });
 
         if (!uploadResponse.ok) {
             const errorData = await uploadResponse.text();
