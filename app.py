@@ -147,10 +147,7 @@ HTML_TEMPLATE = """
         try {
         const response = await fetch(`${backendUrl}/api/upload`, {
             method: "POST",
-            headers: {
-                "ngrok-skip-browser-warning": "69420", // Bypasses ngrok's warning page
-            },
-           body: formData, // Sending the images as FormData
+            body: formData, 
         });
 
         if (!uploadResponse.ok) {
