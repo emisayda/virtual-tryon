@@ -14,7 +14,7 @@ CORS(app)
 
 
 class Config:
-    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://4b24-193-255-198-135.ngrok-free.app ')
+    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://4b24-193-255-198-135.ngrok-free.app')
     REQUEST_TIMEOUT = 30
 
 
@@ -130,82 +130,78 @@ HTML_TEMPLATE = """
         }
 
         document.getElementById('tryonForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    hideStatus();
+            e.preventDefault();
+            hideStatus();
 
-    const formData = new FormData(e.target);
-    const loading = document.getElementById('loading');
-    const result = document.getElementById('result');
-    const resultImage = document.getElementById('resultImage');
-    const downloadLink = document.getElementById('downloadLink');
+            const formData = new FormData(e.target);
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const resultImage = document.getElementById('resultImage');
+            const downloadLink = document.getElementById('downloadLink');
 
-    try {
-        loading.classList.remove('hidden');
-        result.classList.add('hidden');
+            try {
+                loading.classList.remove('hidden');
+                result.classList.add('hidden');
 
-        console.log('Uploading files...');
-        const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
-            method: 'POST',
-            body: formData
+                console.log('Uploading files...');
+                const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!uploadResponse.ok) {
+                    throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+                }
+
+                const uploadData = await uploadResponse.json();
+                console.log('Upload successful:', uploadData);
+
+                console.log('Generating try-on...');
+                const generateResponse = await fetch(`${backendUrl}/api/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        person_image: uploadData.person_image,
+                        garment_image: uploadData.garment_image,
+                        steps: formData.get('steps'),
+                        cfg: formData.get('cfg')
+                    })
+                });
+
+                if (!generateResponse.ok) {
+                    const errorData = await generateResponse.text();
+                    throw new Error(`Generation failed: ${errorData}`);
+                }
+
+                const generateData = await generateResponse.json();
+                console.log('Generate successful:', generateData);
+
+                console.log('Fetching result...');
+                const imageUrl = `${backendUrl}/api/result/${generateData.image}`;
+                console.log('Result URL:', imageUrl);
+
+                resultImage.src = imageUrl;
+                resultImage.onload = () => {
+                    console.log('✅ Image loaded successfully.');
+                };
+                resultImage.onerror = () => {
+                    console.error('❌ Failed to load the image.');
+                };
+
+                downloadLink.href = imageUrl;
+                downloadLink.download = generateData.image;
+
+                result.classList.remove('hidden');
+                showStatus('Generation completed successfully!', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus(error.message, 'error');
+            } finally {
+                loading.classList.add('hidden');
+            }
         });
-
-        if (!uploadResponse.ok) {
-            const errorData = await uploadResponse.text();
-            throw new Error(`Upload failed: ${errorData}`);
-        }
-
-        const uploadData = await uploadResponse.json();
-        console.log('Upload successful:', uploadData);
-
-        console.log('Generating try-on...');
-        const generateResponse = await fetch(`${backendUrl}/api/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                person_image: uploadData.person_image,
-                garment_image: uploadData.garment_image,
-                steps: formData.get('steps'),
-                cfg: formData.get('cfg')
-            })
-        });
-
-        if (!generateResponse.ok) {
-            const errorData = await generateResponse.text();
-            throw new Error(`Generation failed: ${errorData}`);
-        }
-
-        const generateData = await generateResponse.json();
-        console.log('Generate successful:', generateData);
-
-        console.log('Fetching result...');
-        const imageUrl = `${backendUrl}/api/result/${generateData.image}`;
-        console.log('Result URL:', imageUrl);
-
-        // Assign the URL to the image
-        resultImage.src = imageUrl;
-        resultImage.onload = () => {
-            console.log('✅ Image loaded successfully.');
-        };
-        resultImage.onerror = () => {
-            console.error('❌ Failed to load the image.');
-        };
-
-        // Assign the URL to the download link
-        downloadLink.href = imageUrl;
-        downloadLink.download = generateData.image;
-
-        result.classList.remove('hidden');
-        showStatus('Generation completed successfully!', 'success');
-    } catch (error) {
-        console.error('Error:', error);
-        showStatus(error.message, 'error');
-    } finally {
-        loading.classList.add('hidden');
-    }
-});
-
 
         document.querySelector('input[name="person_image"]')
             .addEventListener('change', e => previewImage(e.target, 'personPreview'));
@@ -230,7 +226,8 @@ def test():
     try:
         response = requests.get(
             f"{Config.LOCAL_BACKEND_URL}/test",
-            timeout=Config.REQUEST_TIMEOUT
+            timeout=Config.REQUEST_TIMEOUT,
+            headers={'ngrok-skip-browser-warning': '69420'}
         )
         return jsonify(response.json())
     except requests.exceptions.RequestException as e:
