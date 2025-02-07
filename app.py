@@ -14,7 +14,7 @@ CORS(app)
 
 
 class Config:
-    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://4b24-193-255-198-135.ngrok-free.app')
+    LOCAL_BACKEND_URL = os.getenv('LOCAL_BACKEND_URL', 'https://4b24-193-255-198-135.ngrok-free.app ')
     REQUEST_TIMEOUT = 30
 
 
@@ -144,10 +144,9 @@ HTML_TEMPLATE = """
         result.classList.add('hidden');
 
         console.log('Uploading files...');
-        try {
-        const response = await fetch(`${backendUrl}/api/upload`, {
-            method: "POST",
-            body: formData, 
+        const uploadResponse = await fetch(`${backendUrl}/api/upload`, {
+            method: 'POST',
+            body: formData
         });
 
         if (!uploadResponse.ok) {
